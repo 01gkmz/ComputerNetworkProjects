@@ -14,24 +14,28 @@ def main():
         exit(1)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(('127.0.0.1', ECHO_PORT))
-    server_socket.listen(5)
+    server_socket.listen(10)
 
-    fd_map = {server_socket.fileno(): server_socket}
+    epoller = select.epoll()
+    epoller.register(server_socket.fileno(), select.EPOLLIN|select.EPOLLET)
 
-    poller = select.poll()
-    poller.register(server_socket, select.POLLIN)
-
+    connections = {}
+    addresses = {}
+    
     while True:
-        events = poller.poll()
+        events = epoller.poll()
         for fd, event in events:
             if fd == server_socket.fileno():
                 client, addr = server_socket.accept()
                 print("Connection from ", addr)
-                poller.register(client, select.POLLIN | select.POLLERR)
-                fd_map[client.fileno()] = client
 
-            elif event & select.POLLIN:
-                data = fd_map[fd].recv(1024)
+                connections[client.fileno()] = client
+                addresses[client.fileno()] = addr
+
+                epoll.register(client.fileno(), select.EPOLLIN|select.EPOLLET)
+
+            elif event == select.EPOLLIN:
+                data = connections[fd].recv(1024)
                 fd_map[fd].send(data)
 
 
