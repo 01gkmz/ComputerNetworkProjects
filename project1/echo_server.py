@@ -14,7 +14,8 @@ def main():
         exit(1)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(('127.0.0.1', ECHO_PORT))
-    server_socket.listen(10)
+    server_socket.listen(5)
+    server_socket.setblocking(False)
 
     epoller = select.epoll()
     epoller.register(server_socket.fileno(), select.EPOLLIN|select.EPOLLET)
@@ -36,7 +37,11 @@ def main():
 
             elif event == select.EPOLLIN:
                 data = connections[fd].recv(1024)
-                fd_map[fd].send(data)
+
+                if data:
+                    connections[fd].send(data)
+                else:
+                    connections[fd].close()
 
 
 if __name__ == '__main__':
