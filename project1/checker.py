@@ -19,8 +19,8 @@ numConnections = int(sys.argv[6])
 
 socketList = []
 
-RECV_TOTAL_TIMEOUT = 0.1
-RECV_EACH_TIMEOUT = 0.01
+RECV_TOTAL_TIMEOUT = 1.0
+RECV_EACH_TIMEOUT = 10.0
 
 
 for i in range(numConnections):
