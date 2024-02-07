@@ -33,15 +33,11 @@ def main():
                 connections[client.fileno()] = client
                 addresses[client.fileno()] = addr
 
-                epoll.register(client.fileno(), select.EPOLLIN|select.EPOLLET)
+                epoller.register(client.fileno(), select.EPOLLIN|select.EPOLLET)
 
-            elif event == select.EPOLLIN:
+            elif event & select.EPOLLIN:
                 data = connections[fd].recv(1024)
-
-                if data:
-                    connections[fd].send(data)
-                else:
-                    connections[fd].close()
+                connections[fd].send(data)
 
 
 if __name__ == '__main__':
